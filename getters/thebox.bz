@@ -1,0 +1,27 @@
+#!/bin/bash
+
+
+
+# The job of get_cookies is simply to print any cookies that may be needed to download the torrents
+# If no cookies are needed, print an empty string
+get_cookies() {
+	cat <<COOKIES
+.thebox.bz	TRUE	/	FALSE	1830319200	uid	user_id
+.thebox.bz	TRUE	/	FALSE	1830319200	pass	md5_pass
+COOKIES
+}
+
+# The job of get_rss is to print a bunch of lines starting with a url,
+# then the title of the torrent afterwards
+# eg:
+# http://example.com/foobar.torrent Package xyz-1.2
+get_rss() {
+	# In the case of thebox.bz we need to be authenticated to download the rss feed
+	_cookiejar=`mktemp`
+	get_cookies > $_cookiejar
+
+	URL=https://thebox.bz/rss.php
+	wget --load-cookies $_cookiejar --no-check-certificate -q -O - $URL |  sed 's/ & / \&amp; /g' | xml sel -t -m "/rss/channel/item" -v "concat(./link, ' ',./title, '
+')" | sed 's/details.php?id=/download.php\//g' | sed 's/ /\/'$RANDOM'.torrent /'
+	rm $_cookiejar
+}

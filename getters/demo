@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# The job of get_rss is to print a bunch of lines starting with a url,
+# then the title of the torrent afterwards
+get_rss() {
+	cat<<DEMO
+http://dummyimage.com/100x50/000/ff1 Foobar S01E02 720p x264-Pirate
+http://dummyimage.com/100x50/000/ff2 Foobar S01E02 1080p x264-Pirate
+http://dummyimage.com/100x50/000/ff3 Foobar S01E01 720p WEBTV-Pirate
+http://dummyimage.com/100x50/000/ff4 Foobar S01E01 720p x264-Pirate
+http://dummyimage.com/100x50/000/ff5 Foobar S01E01 1080p x264-Pirate
+DEMO
+}
+
+# The job of get_cookies is simply to print any cookies that may be needed to download the torrents
+# If no cookies are needed, print an empty string
+get_cookies() {
+	cat <<COOKIES
+.example.com	TRUE	/	FALSE	1830319200	uid	1234
+.example.com	TRUE	/	FALSE	1830319200	pass	md5-sum
+COOKIES
+}

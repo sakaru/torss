@@ -1,0 +1,137 @@
+#!/bin/sh
+# Set defaults
+RULES="$HOME/.config/torss/rules"
+GETTER=""
+DESTINATION=$(pwd)
+HISTORY="$HOME/.config/torss/history"
+HELP=0
+# If no parameters were given then treat it as a -h
+if [ -z $1 ]; then
+	HELP=1
+fi
+# Parse the options
+until [ -z "$1" ]; do
+	case "$1" in
+		-g|--getter) shift; GETTER="$1"; shift ;;
+		-r|--rules) shift; RULES="$1"; shift ;;
+		-d|--destination) shift; DESTINATION="$1"; shift ;;
+		-i|--history) shift; HISTORY="$1"; shift ;;
+		-h|--help) shift; HELP=1 ;;
+		*)  break ;;
+	esac
+done
+
+
+if [ $HELP == 1 ]; then
+	cat <<HELP
+Usage: $0 -g getter [OPTIONS]...
+torss is parser of RSS feeds which downloads files referenced in the RSS if the
+title of the entry matches given rules.
+	-g, --getter		getter script to use
+	-r, --rules		rules file to use
+	-d, --destination	destination path to save torrents to
+	-i, --history		history file to use
+	-h, --help		help
+
+The rules file must contain an array named rules containing at least one entry.
+These entries should be regular expressions (for grep -E) for torrent titles
+to be downloaded. See /etc/torss/rules.sample
+
+The getter script will be looked for in ~/.config/torss/getters/, then
+/etc/torss/getters/ and finall as a file referenced from the CWD. This means
+you can pass either simply the filename or the absolute/relative path.
+
+The destination path will usually be a folder where your torrent client
+automatically picks up torrent files.
+
+The history file is used to ensure the same torrent isn't downloaded multiple
+times, as such it should, for normal use, be left as the default value.
+HELP
+	exit
+fi
+
+# Sanity checks
+# If the getter exists in the user's folder
+if [ -e "$HOME/.config/torss/getters/$GETTER" -a -f "$HOME/.config/torss/getters/$GETTER" ]; then
+	GETTER="$HOME/.config/torss/getters/$GETTER"
+# If the getter exists in the global config
+elif [ -e "/etc/torss/getters/$GETTER" -a -f "/etc/torss/getters/$GETTER" ]; then
+	GETTER="/etc/torss/getters/$GETTER"
+# If the getter doesn't exist as a relative/absolute path
+elif [ ! -e "$GETTER" -o ! -f "$GETTER" ]; then
+	echo "The GETTER file doesn't exist"
+	exit 2
+# If none of the above are true, then the getter variable is already correct
+fi
+if [ ! -d $DESTINATION -o ! -w "$DESTINATION" ]; then
+	echo "You don't have permissions to write to the DESTINATION folder ($DESTINATION)"
+	exit 3
+fi
+if [ ! -e "$RULES" -o ! -f "$RULES" ]; then
+	echo "The RULES file doesn't exist"
+	exit 1
+fi
+touch $HISTORY &> /dev/null
+if [ $? != 0 ]; then
+	echo "You don't have permissions to write to the HISTORY file ($HISTORY)"
+	exit 4
+fi
+
+SUMMARY="$(mktemp)"
+COOKIE_JAR="$(mktemp)"
+
+# Downloads the .torrent files to the correct folder
+download() {
+	url=$1
+	title=$2
+	to_skip "$url"
+	skip=$?
+	if [ $skip == 0 ]; then
+		echo "Skipping '$title'"
+		return 1
+	fi
+	output=$(echo "$DESTINATION/$title.torrent" | tr ' ' '_')
+	wget -q -O "$output" --load-cookies "$COOKIE_JAR" "$url"
+	mark_complete "$url"
+	echo "Downloading '$title' to $DESTINATION"
+	return 0
+}
+
+# Determines if the url has already been downloaded
+to_skip() {
+	url=$1
+	hash=$(echo "$url"  | sha256sum | awk '{print $1}')
+	grep $hash "$HISTORY" &> /dev/null
+	return $?
+}
+
+# Marks a url as downloaded, so it will be skipped next time
+mark_complete() {
+	url=$1
+	echo "$url" | sha256sum | awk '{print $1}' >> "$HISTORY"
+}
+
+# Here we go
+# import the getter script
+source $GETTER
+get_rss > "$SUMMARY"
+get_cookies > "$COOKIE_JAR"
+
+source $RULES
+# Run each rule on the summary file
+for key in ${!rules[*]}; do
+	rule=${rules[$key]}
+	# Get the item that matches the rule
+	filtered=$(mktemp)
+	grep -Eie "$rule" $SUMMARY > $filtered
+	while read line; do
+		url=$(echo $line | awk '{print $1}')
+		title=$(echo $line | awk '{print substr($0, length($1)+2)}')
+		if [ "$url" ]; then
+			download "$url"  "$title"
+		fi
+	done < $filtered
+done
+
+# Clean up
+rm "$SUMMARY" "$COOKIE_JAR" "$filtered"

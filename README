@@ -1,0 +1,39 @@
+What is this?
+torss is a script which scrapes RSS feeds from torrent trackers, then downloads
+the torrent files that match user defined rules. It is generally called via
+cron on seedboxes to download a torrent as soon as it's released.
+
+torss requires some knowledge of bash and regular expressions to configure.
+Also torss works better on private trackers where duplicates are discouraged.
+
+How to install
+
+0. Install xmlstarlet (http://xmlstar.sourceforge.net/) as a dependency
+1. Download and extract the archive
+2. Copy to torss executable into /usr/bin/
+3. Copy rules.sample and the getters folder folder into /etc/torss/
+
+Beyond that, if you are using private trackers you will need to create the
+getter scripts for those, unless they exist in /etc/torss/getters/ (in which
+case you still need to modify that file to insert your own credentials).
+
+You should also create ~/.config/torss for each user who will use torss.
+Any user specific getter scripts should go into ~/.config/torss/getters/.
+
+
+Example Usage
+
+This will download dummy files (actually images, but we'll pretend they are
+torrents) according to dummy rules. Since we specify the sample rules file, use
+the included demo getter script and specify a history file in /tmp we don't
+need to create ~/.config/torrs at all.
+  torss -i /tmp/torss-history -g demo -r /etc/torss/rules.sample
+
+Two "torrent" files should be downloaded when running that. Running the same command
+again will not download any, as they have been listed in the history file
+already.
+
+
+Feedback
+
+Any bugs or feedback should be sent to sakaru@gmail.com

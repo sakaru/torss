@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# The job of get_rss is to print a bunch of lines starting with a url,
+# then the title of the torrent afterwards
+# eg:
+# http://example.com/foobar.torrent Package xyz-1.2
+get_rss() {
+	URL=http://hd-torrents.org/rss.php
+	wget -q -O - $URL | xml sel -t -m "/rss/channel/item" -v "concat(./link, ' ',./title, '
+')" | sed 's/\[TORRENT\]\ //g'
+}
+
+# The job of get_cookies is simply to print any cookies that may be needed to download the torrents
+# If no cookies are needed, print an empty string
+get_cookies() {
+	cat <<COOKIES
+.hd-torrents.org	TRUE	/	FALSE	1830319200	uid	user_id
+.hd-torrents.org	TRUE	/	FALSE	1830319200	pass	md5_pass
+COOKIES
+}
