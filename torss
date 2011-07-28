@@ -17,7 +17,7 @@ until [ -z "$1" ]; do
 		-d|--destination) shift; DESTINATION="$1"; shift ;;
 		-i|--history) shift; HISTORY="$1"; shift ;;
 		-h|--help) shift; HELP=1 ;;
-		*)  break ;;
+		*) break ;;
 	esac
 done
 
@@ -102,7 +102,7 @@ download() {
 # Determines if the url has already been downloaded
 to_skip() {
 	url=$1
-	hash=$(echo "$url"  | sha256sum | awk '{print $1}')
+	hash=$(echo "$url" | sha256sum | awk '{print $1}')
 	grep $hash "$HISTORY" &> /dev/null
 	return $?
 }
@@ -130,7 +130,7 @@ for key in ${!rules[*]}; do
 		url=$(echo $line | awk '{print $1}')
 		title=$(echo $line | awk '{print substr($0, length($1)+2)}')
 		if [ "$url" ]; then
-			download "$url"  "$title"
+			download "$url" "$title"
 		fi
 	done < $filtered
 done
