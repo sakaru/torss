@@ -34,11 +34,11 @@ title of the entry matches given rules.
 	-h, --help		help
 
 The rules file must contain an array named rules containing at least one entry.
-These entries should be regular expressions (for grep -E) for torrent titles
+These entries should be regular expressions (for grep -Ei) for torrent titles
 to be downloaded. See /etc/torss/rules.sample
 
 The getter script will be looked for in ~/.config/torss/getters/, then
-/etc/torss/getters/ and finall as a file referenced from the CWD. This means
+/etc/torss/getters/ and finally as a file referenced from the CWD. This means
 you can pass either simply the filename or the absolute/relative path.
 
 The destination path will usually be a folder where your torrent client
