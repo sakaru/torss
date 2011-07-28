@@ -79,6 +79,8 @@ fi
 
 SUMMARY="$(mktemp)"
 COOKIE_JAR="$(mktemp)"
+# Set default wget options, can be overwritten in the getters
+WGET_OPTIONS=""
 
 # Downloads the .torrent files to the correct folder
 download() {
@@ -91,7 +93,7 @@ download() {
 		return 1
 	fi
 	output=$(echo "$DESTINATION/$title.torrent" | tr ' ' '_')
-	wget -q -O "$output" --load-cookies "$COOKIE_JAR" "$url"
+	wget -q -O "$output" "$WGET_OPTIONS" --load-cookies "$COOKIE_JAR" "$url"
 	mark_complete "$url"
 	echo "Downloading '$title' to $DESTINATION"
 	return 0
