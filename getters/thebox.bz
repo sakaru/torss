@@ -22,7 +22,7 @@ get_rss() {
 
 	URL=https://thebox.bz/rss.php
 	wget --load-cookies $_cookiejar --no-check-certificate -q -O - $URL | sed 's/ & / \&amp; /g' | xml sel -t -m "/rss/channel/item" -v "concat(./link, ' ',./title, '
-')" | sed 's/details.php?id=/download.php\//g' | sed 's/ /\/'$RANDOM'.torrent /'
+')" | sed 's/details.php?id=/download.php\//g' | sed 's/ /\/static /'
 	rm $_cookiejar
 }
 
