@@ -1,0 +1,16 @@
+#!/bin/bash
+
+get_cookies() {
+	echo ""
+}
+
+get_rss() {
+	## Remove the following two lines
+	echo "the td.af getter needs to be configured" > /dev/stderr
+	exit 1
+	#### You need to go to td.af/rss.php and generate the url below ###
+	#### Select the categories you want, select "Direct Download"
+	URL="http://td.af/get_rss.php?feed=direct&user=USERNAME&cat=7&passkey=PASSKEY"
+	wget -q -O - $URL | sed 's/ & / \&amp; /g' | xml sel -t -m "/rss/channel/item" -v "concat(./link, ' ',./title, '
+')"
+}
