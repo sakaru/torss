@@ -11,7 +11,7 @@ How to install
 0. Install xmlstarlet (http://xmlstar.sourceforge.net/) as a dependency
 1. Download and extract the archive
 2. Copy to torss executable into /usr/bin/
-3. Copy rules.sample and the getters folder folder into /etc/torss/
+3. Copy rules.sample and the getters folder into /etc/torss/
 
 Beyond that, if you are using private trackers you will need to create the
 getter scripts for those, unless they exist in /etc/torss/getters/ (in which
