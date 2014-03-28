@@ -131,7 +131,7 @@ for key in ${!rules[*]}; do
 	grep -Eie "$rule" $SUMMARY > $filtered
 	while read line; do
 		url=$(echo $line | awk '{print $1}')
-		title=$(echo $line | awk '{print substr($0, length($1)+2)}')
+		title=$(echo $line | awk '{print substr($0, length($1)+2)}' | tr '/' '.')
 		if [ "$url" ]; then
 			download "$url" "$title"
 		fi
